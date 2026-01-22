@@ -6,7 +6,7 @@ import time
 import json
 import os
 import sys
-import mqtt_config
+import config
 import random
 
 # Import TFLite
@@ -24,7 +24,6 @@ except ImportError:
 # Constants
 MODEL_PATH = "models/detect.tflite"
 LABEL_PATH = "models/coco_labels.txt"
-CONFIDENCE_THRESHOLD = 0.5
 
 def on_connect(client, userdata, flags, rc, properties=None):
     print(f"Connected to MQTT Broker with result code {rc}")
@@ -39,14 +38,14 @@ def main():
     global TFLITE_AVAILABLE
     # 1. Setup MQTT
     # Paho MQTT 2.0.0+ requires explicit CallbackAPIVersion
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, mqtt_config.CLIENT_ID)
-    if mqtt_config.MQTT_USERNAME and mqtt_config.MQTT_PASSWORD:
-        client.username_pw_set(mqtt_config.MQTT_USERNAME, mqtt_config.MQTT_PASSWORD)
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, config.CLIENT_ID)
+    if config.MQTT_USERNAME and config.MQTT_PASSWORD:
+        client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
     
     client.on_connect = on_connect
     
     try:
-        client.connect(mqtt_config.MQTT_BROKER, mqtt_config.MQTT_PORT, 60)
+        client.connect(config.MQTT_BROKER, config.MQTT_PORT, 60)
         client.loop_start()
     except Exception as e:
         print(f"Failed to connect to MQTT Broker: {e}")
@@ -120,18 +119,21 @@ def main():
             scores = interpreter.get_tensor(output_details[2]['index'])[0]
 
             for i in range(len(scores)):
-                if scores[i] > CONFIDENCE_THRESHOLD:
+                if scores[i] > config.CONFIDENCE_THRESHOLD:
                     class_id = int(classes[i])
                     label_name = labels[class_id] if class_id < len(labels) else "Unknown"
                     
-                    if "person" in label_name.lower():
-                        person_count += 1
+                    # Filter by configured target labels
+                    # Check if the detected label is in our target list (case-insensitive)
+                    if any(target.lower() in label_name.lower() for target in config.TARGET_LABELS):
+                        person_count += 1 
+                        
                         ymin, xmin, ymax, xmax = boxes[i]
                         imH, imW, _ = frame.shape
                         (left, right, top, bottom) = (int(xmin * imW), int(xmax * imW), int(ymin * imH), int(ymax * imH))
                         
                         cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                        cv2.putText(frame, f"Person {scores[i]:.2f}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        cv2.putText(frame, f"{label_name} {scores[i]:.2f}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         else:
             # Simulation Logic
             # Randomly simulate "Person Detected" every ~5 seconds or based on key press
@@ -154,7 +156,7 @@ def main():
         }
         
         if current_time - last_publish_time > PUBLISH_INTERVAL:
-            client.publish(mqtt_config.MQTT_TOPIC, json.dumps(payload))
+            client.publish(config.MQTT_TOPIC, json.dumps(payload))
             print(f"Published: {payload}")
             last_publish_time = current_time
 

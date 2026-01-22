@@ -55,6 +55,19 @@ If you prefer to set it up manually:
 - The script will output "Person detected" and publish to MQTT.
 - Press `q` to exit detection loop (if a window is shown).
 
+## Configuration
+
+Edit `config.py` to change settings:
+```python
+# MQTT
+MQTT_BROKER = "test.mosquitto.org"
+MQTT_TOPIC = "classroom/detection"
+
+# Detection
+CONFIDENCE_THRESHOLD = 0.5
+TARGET_LABELS = ["person"]
+```
+
 ## MQTT Payload
 
 The device publishes JSON data to `classroom/detection`:
