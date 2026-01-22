@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the virtual environment directory
-VENV_DIR="venv"
+VENV_DIR="raspberry-pi-camera-detection"
 
 # Check if venv exists
 if [ ! -d "$VENV_DIR" ]; then

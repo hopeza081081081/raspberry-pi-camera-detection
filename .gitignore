@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+raspberry-pi-camera-detection/
+venv/
+
+# Models
+models/
+
+# MacOS
+.DS_Store

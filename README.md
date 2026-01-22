@@ -36,8 +36,8 @@ If you prefer to set it up manually:
 
 1.  **Create & Activate Virtual Environment**:
     ```bash
-    python3 -m venv venv
-    source venv/bin/activate
+    python3 -m venv raspberry-pi-camera-detection
+    source raspberry-pi-camera-detection/bin/activate
     ```
 2.  **Install Dependencies**:
     ```bash
