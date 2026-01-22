@@ -1,0 +1,6 @@
+opencv-python
+paho-mqtt
+# Numpy 1.22+ dropped support for Python 3.7
+numpy<1.22; python_version < "3.8"
+numpy; python_version >= "3.8"
+requests

@@ -1,0 +1,69 @@
+
+import os
+import urllib.request
+import tarfile
+import shutil
+import zipfile
+
+MODEL_URL = "https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip"
+LABEL_URL = "https://dl.google.com/coral/cocomobile/coco_labels.txt"
+
+MODEL_DIR = "models"
+MODEL_FILE_NAME = "detect.tflite"
+LABEL_FILE_NAME = "coco_labels.txt"
+
+def download_file(url, output_path):
+    print(f"Downloading {url}...")
+    try:
+        with urllib.request.urlopen(url) as response, open(output_path, 'wb') as out_file:
+            shutil.copyfileobj(response, out_file)
+        print(f"Saved to {output_path}")
+    except Exception as e:
+        print(f"Failed to download {url}: {e}")
+
+def setup_models():
+    if not os.path.exists(MODEL_DIR):
+        os.makedirs(MODEL_DIR)
+
+    # Download Model Zip (contains both model and labels)
+    zip_path = os.path.join(MODEL_DIR, "model.zip")
+    
+    # Check if we need to download
+    # We check if the final model file exists
+    final_model_path = os.path.join(MODEL_DIR, MODEL_FILE_NAME)
+    
+    if not os.path.exists(final_model_path):
+        download_file(MODEL_URL, zip_path)
+        
+        print("Extracting model...")
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(MODEL_DIR)
+                
+            print("Extraction complete.")
+            
+            # The zip usually contains 'detect.tflite' and 'labelmap.txt' directly or in a subdir?
+            # Let's check typical structure. Usually it is flat or one folder.
+            # If we don't know, we can just leave them or rename specific ones if found.
+            
+            # Rename labelmap.txt to coco_labels.txt if it exists
+            potential_label_map = os.path.join(MODEL_DIR, "labelmap.txt")
+            target_label_map = os.path.join(MODEL_DIR, LABEL_FILE_NAME)
+            
+            if os.path.exists(potential_label_map) and not os.path.exists(target_label_map):
+                os.rename(potential_label_map, target_label_map)
+                print(f"Renamed {potential_label_map} to {target_label_map}")
+                
+        except zipfile.BadZipFile:
+            print("Error: The downloaded file is not a valid zip file.")
+        except Exception as e:
+            print(f"Error during extraction: {e}")
+        
+        # Cleanup
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+    else:
+        print("Model already exists.")
+
+if __name__ == "__main__":
+    setup_models()
