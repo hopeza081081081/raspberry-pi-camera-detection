@@ -25,7 +25,7 @@ except ImportError:
 MODEL_PATH = "models/detect.tflite"
 LABEL_PATH = "models/coco_labels.txt"
 
-def on_connect(client, userdata, flags, rc, properties=None):
+def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
 
 def load_labels(filename):
@@ -37,8 +37,8 @@ def load_labels(filename):
 def main():
     global TFLITE_AVAILABLE
     # 1. Setup MQTT
-    # Paho MQTT 2.0.0+ requires explicit CallbackAPIVersion
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, config.CLIENT_ID)
+    # Paho MQTT < 2.0.0 uses V1 API (No CallbackAPIVersion needed)
+    client = mqtt.Client(config.CLIENT_ID) 
     if config.MQTT_USERNAME and config.MQTT_PASSWORD:
         client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
     

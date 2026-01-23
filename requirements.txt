@@ -1,6 +1,7 @@
 # Pin OpenCV to <4.8 because newer versions don't have pre-built wheels for Legacy Pi OS (Buster/Ian)
 opencv-python<4.8
-paho-mqtt
+# Pin Paho MQTT to <2.0.0 for Python 3.7 compatibility (v2 uses typing.Literal which is 3.8+)
+paho-mqtt<2.0.0
 # Numpy 2.0+ breaks API compatibility with many libraries including tflite-runtime
 numpy<2.0
 requests
