@@ -25,7 +25,8 @@ fi
 # Always check/install dependencies (pip will skip if already satisfied)
 echo "Checking dependencies..."
 # Use PiWheels to get pre-compiled binaries (fast!) instead of compiling (slow!)
-pip install -r requirements.txt --extra-index-url https://www.piwheels.org/simple
+# --prefer-binary: Force pip to choose an older version if it has a wheel, rather than compiling a newer one
+pip install -r requirements.txt --extra-index-url https://www.piwheels.org/simple --prefer-binary
 
 # Attempt to install TFLite Runtime (Specific for Raspberry Pi)
 if ! python -c "import tflite_runtime" &> /dev/null; then
