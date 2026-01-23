@@ -6,7 +6,8 @@ VENV_DIR="raspberry-pi-camera-detection"
 # Check if venv exists
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment..."
-    python3 -m venv $VENV_DIR
+    # Use system-site-packages to speed up install by using apt versions of numpy/opencv if available
+    python3 -m venv --system-site-packages $VENV_DIR
     
     echo "Activating virtual environment..."
     source $VENV_DIR/bin/activate
@@ -23,7 +24,8 @@ fi
 
 # Always check/install dependencies (pip will skip if already satisfied)
 echo "Checking dependencies..."
-pip install -r requirements.txt
+# Use PiWheels to get pre-compiled binaries (fast!) instead of compiling (slow!)
+pip install -r requirements.txt --extra-index-url https://www.piwheels.org/simple
 
 # Attempt to install TFLite Runtime (Specific for Raspberry Pi)
 if ! python -c "import tflite_runtime" &> /dev/null; then
