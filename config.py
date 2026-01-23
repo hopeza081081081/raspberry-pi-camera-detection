@@ -8,4 +8,8 @@ CLIENT_ID = "pi_classroom_detector"
 
 # Detection Settings
 CONFIDENCE_THRESHOLD = 0.5 # 0.1 to 1.0
-TARGET_LABELS = ["person"] # List of labels to detect (e.g. "person", "cat", "dog", "laptop")
+TARGET_LABELS = ["person"] # List of labels to detect
+
+# Performance Settings
+HEADLESS_MODE = True # Set to False if you have a monitor connected and want to see the video
+NUM_THREADS = 4 # Number of threads for TFLite inference (4 is good for Pi 4)

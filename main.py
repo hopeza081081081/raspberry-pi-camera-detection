@@ -59,7 +59,7 @@ def main():
     
     if TFLITE_AVAILABLE and os.path.exists(MODEL_PATH):
         try:
-            interpreter = tflite.Interpreter(model_path=MODEL_PATH)
+            interpreter = tflite.Interpreter(model_path=MODEL_PATH, num_threads=config.NUM_THREADS)
             interpreter.allocate_tensors()
             input_details = interpreter.get_input_details()
             output_details = interpreter.get_output_details()
@@ -161,13 +161,13 @@ def main():
             last_publish_time = current_time
 
         # Show frame
-        try:
-            cv2.imshow('Person Detection', frame)
-            if cv2.waitKey(1) == ord('q'):
-                break
-        except Exception:
-            # Headless environment
-            pass
+        if not config.HEADLESS_MODE:
+            try:
+                cv2.imshow('Person Detection', frame)
+                if cv2.waitKey(1) == ord('q'):
+                    break
+            except Exception:
+                pass
 
     cap.release()
     cv2.destroyAllWindows()
