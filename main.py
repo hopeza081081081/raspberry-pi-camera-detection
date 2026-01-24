@@ -118,6 +118,14 @@ def main():
             classes = interpreter.get_tensor(output_details[1]['index'])[0]
             scores = interpreter.get_tensor(output_details[2]['index'])[0]
 
+            # Debug: Print top detection every ~30 frames (approx 1 sec)
+            if int(time.time() * 10) % 30 == 0:
+                # Get top result info for debugging
+                top_score = scores[0]
+                top_class_id = int(classes[0])
+                top_label = labels[top_class_id] if top_class_id < len(labels) else "Unknown"
+                print(f"DEBUG: Top detection: '{top_label}' with score {top_score:.2f}")
+
             for i in range(len(scores)):
                 if scores[i] > config.CONFIDENCE_THRESHOLD:
                     class_id = int(classes[i])
