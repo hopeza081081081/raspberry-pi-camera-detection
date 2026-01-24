@@ -42,17 +42,10 @@ def setup_models():
                 
             print("Extraction complete.")
             
-            # The zip usually contains 'detect.tflite' and 'labelmap.txt' directly or in a subdir?
-            # Let's check typical structure. Usually it is flat or one folder.
-            # If we don't know, we can just leave them or rename specific ones if found.
-            
-            # Rename labelmap.txt to coco_labels.txt if it exists
-            potential_label_map = os.path.join(MODEL_DIR, "labelmap.txt")
+            # Download proper label map (The one in zip often has '???' entries)
+            # We explicitly download a clean one
             target_label_map = os.path.join(MODEL_DIR, LABEL_FILE_NAME)
-            
-            if os.path.exists(potential_label_map) and not os.path.exists(target_label_map):
-                os.rename(potential_label_map, target_label_map)
-                print(f"Renamed {potential_label_map} to {target_label_map}")
+            download_file(LABEL_URL, target_label_map)
                 
         except zipfile.BadZipFile:
             print("Error: The downloaded file is not a valid zip file.")
