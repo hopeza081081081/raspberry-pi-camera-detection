@@ -56,7 +56,12 @@ def setup_models():
         if os.path.exists(zip_path):
             os.remove(zip_path)
     else:
-        print("Model already exists.")
+        print("Model file already exists. Skipping model download.")
+
+    # Always update/verify the label map to ensure we have the clean version (not the '???' one from zip)
+    print("Verifying label map...")
+    target_label_map = os.path.join(MODEL_DIR, LABEL_FILE_NAME)
+    download_file(LABEL_URL, target_label_map)
 
 if __name__ == "__main__":
     setup_models()
