@@ -6,7 +6,7 @@ import shutil
 import zipfile
 
 MODEL_URL = "https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip"
-LABEL_URL = "https://dl.google.com/coral/cocomobile/coco_labels.txt"
+LABEL_URL = "https://raw.githubusercontent.com/google-coral/test_data/master/coco_labels.txt"
 
 MODEL_DIR = "models"
 MODEL_FILE_NAME = "detect.tflite"

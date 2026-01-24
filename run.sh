@@ -40,6 +40,11 @@ if ! python -c "import tflite_runtime" &> /dev/null; then
     fi
 fi
 
+# Download Models (if not already present)
+# Using python3 explicitly to avoid legacy python 2 issues
+echo "Checking models..."
+python3 download_models.py
+
 # Run the main application
 echo "Starting Person Detection..."
-python main.py
+python3 main.py
