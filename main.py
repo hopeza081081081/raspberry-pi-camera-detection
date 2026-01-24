@@ -27,6 +27,8 @@ LABEL_PATH = "models/coco_labels.txt"
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
+    # Publish Online Status (Retained)
+    client.publish(config.MQTT_TOPIC_LWT, payload="true", qos=2, retain=True)
 
 def load_labels(filename):
     if not os.path.exists(filename):
@@ -41,6 +43,9 @@ def main():
     client = mqtt.Client(config.CLIENT_ID) 
     if config.MQTT_USERNAME and config.MQTT_PASSWORD:
         client.username_pw_set(config.MQTT_USERNAME, config.MQTT_PASSWORD)
+    
+    # Set Last Will and Testament (LWT)
+    client.will_set(config.MQTT_TOPIC_LWT, payload="false", qos=2, retain=True)
     
     client.on_connect = on_connect
     
@@ -98,8 +103,8 @@ def main():
             cv2.putText(frame, "No Camera - Simulation", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             time.sleep(0.1)
 
-        people_detected = []
-        person_count = 0
+        is_person_detected = False
+        max_prob = 0.0
 
         if TFLITE_AVAILABLE and interpreter:
             # Real Detection Logic
@@ -134,7 +139,10 @@ def main():
                     # Filter by configured target labels
                     # Check if the detected label is in our target list (case-insensitive)
                     if any(target.lower() in label_name.lower() for target in config.TARGET_LABELS):
-                        person_count += 1 
+                        # Update status if we found a person (or target) with higher confidence
+                        is_person_detected = True
+                        if scores[i] > max_prob:
+                            max_prob = float(scores[i])
                         
                         ymin, xmin, ymax, xmax = boxes[i]
                         imH, imW, _ = frame.shape
@@ -146,25 +154,25 @@ def main():
             # Simulation Logic
             # Randomly simulate "Person Detected" every ~5 seconds or based on key press
             if int(time.time()) % 10 < 5: # Detected for 5s, then Empty for 5s
-                person_count = 1
+                is_person_detected = True
+                max_prob = 0.95
                 cv2.putText(frame, "SIMULATION: Person Detected", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             else:
-                person_count = 0
+                is_person_detected = False
+                max_prob = 0.0
                 cv2.putText(frame, "SIMULATION: Empty", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         # Publish to MQTT
         current_time = time.time()
-        status = "occupied" if person_count > 0 else "empty"
-
+        
+        # Payload format requested by user: {"isPerson": true/false, "prob": 0.xx}
         payload = {
-            "status": status,
-            "count": person_count,
-            "timestamp": current_time,
-            "mode": "simulation" if not TFLITE_AVAILABLE else "live"
+            "isPerson": is_person_detected,
+            "prob": max_prob
         }
         
         if current_time - last_publish_time > PUBLISH_INTERVAL:
-            client.publish(config.MQTT_TOPIC, json.dumps(payload))
+            client.publish(config.MQTT_TOPIC, json.dumps(payload), qos=0)
             print(f"Published: {payload}")
             last_publish_time = current_time
 

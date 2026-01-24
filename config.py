@@ -1,9 +1,11 @@
 # MQTT Configuration
-MQTT_BROKER = "test.mosquitto.org"
+# MQTT Configuration
+MQTT_BROKER = "10.10.200.70"
 MQTT_PORT = 1883
-MQTT_TOPIC = "classroom/detection"
-MQTT_USERNAME = ""
-MQTT_PASSWORD = ""
+MQTT_TOPIC = "myFinalProject/rpi2/objDetector"
+MQTT_TOPIC_LWT = "myFinalProject/rpi2/onlineStatus/online"
+MQTT_USERNAME = "admin"
+MQTT_PASSWORD = "5617091"
 CLIENT_ID = "pi_classroom_detector"
 
 # Detection Settings
