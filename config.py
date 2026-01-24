@@ -7,7 +7,7 @@ MQTT_PASSWORD = ""
 CLIENT_ID = "pi_classroom_detector"
 
 # Detection Settings
-CONFIDENCE_THRESHOLD = 0.8 # 0.1 to 1.0
+CONFIDENCE_THRESHOLD = 0.5 # 0.1 to 1.0
 TARGET_LABELS = ["person"] # List of labels to detect
 
 # Performance Settings
