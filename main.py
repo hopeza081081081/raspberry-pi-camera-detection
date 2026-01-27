@@ -92,7 +92,8 @@ def main():
     print("Starting detection loop...")
     
     last_publish_time = 0
-    PUBLISH_INTERVAL = 1.0 
+    PUBLISH_INTERVAL = 1.0
+    last_detected_state = False # Track previous state for change detection 
 
     while True:
         # Capture frame
@@ -172,9 +173,19 @@ def main():
         }
         
         if current_time - last_publish_time > PUBLISH_INTERVAL:
+            should_publish = True
+            publish_reason = "interval"
+        elif is_person_detected != last_detected_state:
+             should_publish = True
+             publish_reason = "state_change"
+        else:
+             should_publish = False
+
+        if should_publish:
             client.publish(config.MQTT_TOPIC, json.dumps(payload), qos=0)
-            print(f"Published: {payload}")
+            print(f"Published ({publish_reason}): {payload}")
             last_publish_time = current_time
+            last_detected_state = is_person_detected
 
         # Show frame
         if not config.HEADLESS_MODE:
