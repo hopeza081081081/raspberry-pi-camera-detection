@@ -20,7 +20,7 @@ MQTT_PASSWORD = "5617091"
 CLIENT_ID = DEVICE_ID # Client ID must be unique
 
 # Detection Settings
-CONFIDENCE_THRESHOLD = 0.4 # Lowered to 0.4 to detect more people (was 0.5)
+CONFIDENCE_THRESHOLD = 0.5 # Lowered to 0.4 to detect more people (was 0.5)
 TARGET_LABELS = ["person"] # List of labels to detect
 
 # Performance Settings
