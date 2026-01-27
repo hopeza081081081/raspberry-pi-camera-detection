@@ -59,9 +59,13 @@ def setup_models():
         print("Model file already exists. Skipping model download.")
 
     # Always update/verify the label map to ensure we have the clean version (not the '???' one from zip)
-    print("Verifying label map...")
+    # Only download label map if it doesn't exist (Support Offline Mode)
     target_label_map = os.path.join(MODEL_DIR, LABEL_FILE_NAME)
-    download_file(LABEL_URL, target_label_map)
+    if not os.path.exists(target_label_map):
+        print("Downloading label map...")
+        download_file(LABEL_URL, target_label_map)
+    else:
+        print("Label map already exists. Skipping download.")
 
 if __name__ == "__main__":
     setup_models()
