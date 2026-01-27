@@ -24,5 +24,5 @@ CONFIDENCE_THRESHOLD = 0.5 # Lowered to 0.4 to detect more people (was 0.5)
 TARGET_LABELS = ["person"] # List of labels to detect
 
 # Performance Settings
-HEADLESS_MODE = False # Set to False if you have a monitor connected and want to see the video
+HEADLESS_MODE = True # Set to False if you have a monitor connected and want to see the video
 NUM_THREADS = 4 # Number of threads for TFLite inference (4 is good for Pi 4, use 2-3 for Pi 3)
