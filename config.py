@@ -30,5 +30,5 @@ NUM_THREADS = 4 # Number of threads for TFLite inference (4 is good for Pi 4, us
 
 # Data Collection Settings
 DATA_COLLECTION_MODE = True # Set to True to auto-capture images for training
-DATA_COLLECTION_INTERVAL = 60 # Capture every 60 seconds
+DATA_COLLECTION_INTERVAL = 300 # Capture every 60 seconds
 DATA_COLLECTION_DIR = "collected_data" # Directory to save images
