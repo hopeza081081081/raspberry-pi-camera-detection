@@ -20,8 +20,9 @@ MQTT_PASSWORD = "5617091"
 CLIENT_ID = DEVICE_ID # Client ID must be unique
 
 # Detection Settings
-CONFIDENCE_THRESHOLD = 0.5 # Lowered to 0.4 to detect more people (was 0.5)
+CONFIDENCE_THRESHOLD = 0.5 # 0.5 is standard. Increase to 0.6 if ghosts persist.
 TARGET_LABELS = ["person"] # List of labels to detect
+DETECTION_FRAMES_TO_CONFIRM = 3 # Consecutive frames required to confirm detection (Anti-Ghost)
 
 # Performance Settings
 HEADLESS_MODE = False # Set to False if you have a monitor connected and want to see the video

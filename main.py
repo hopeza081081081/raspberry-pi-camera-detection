@@ -94,6 +94,7 @@ def main():
     last_publish_time = 0
     PUBLISH_INTERVAL = 1.0
     last_detected_state = False # Track previous state for change detection 
+    consecutive_frames = 0 # Counter for persistence filter
 
     while True:
         # Capture frame
@@ -104,7 +105,7 @@ def main():
             cv2.putText(frame, "No Camera - Simulation", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             time.sleep(0.1)
 
-        is_person_detected = False
+        found_in_current_frame = False
         max_prob = 0.0
 
         if TFLITE_AVAILABLE and interpreter:
@@ -141,7 +142,7 @@ def main():
                     # Check if the detected label is in our target list (case-insensitive)
                     if any(target.lower() in label_name.lower() for target in config.TARGET_LABELS):
                         # Update status if we found a person (or target) with higher confidence
-                        is_person_detected = True
+                        found_in_current_frame = True
                         if scores[i] > max_prob:
                             max_prob = float(scores[i])
                         
@@ -155,13 +156,22 @@ def main():
             # Simulation Logic
             # Randomly simulate "Person Detected" every ~5 seconds or based on key press
             if int(time.time()) % 10 < 5: # Detected for 5s, then Empty for 5s
-                is_person_detected = True
+                found_in_current_frame = True
                 max_prob = 0.95
                 cv2.putText(frame, "SIMULATION: Person Detected", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             else:
-                is_person_detected = False
+                found_in_current_frame = False
                 max_prob = 0.0
                 cv2.putText(frame, "SIMULATION: Empty", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+        # Persistence Filter Logic
+        if found_in_current_frame:
+            consecutive_frames += 1
+        else:
+            consecutive_frames = 0
+            
+        # Only confirm detection if verified for N consecutive frames
+        is_person_detected = (consecutive_frames >= config.DETECTION_FRAMES_TO_CONFIRM)
 
         # Publish to MQTT
         current_time = time.time()
