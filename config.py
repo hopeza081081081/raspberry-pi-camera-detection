@@ -27,3 +27,8 @@ DETECTION_FRAMES_TO_CONFIRM = 3 # Consecutive frames required to confirm detecti
 # Performance Settings
 HEADLESS_MODE = False # Set to False if you have a monitor connected and want to see the video
 NUM_THREADS = 4 # Number of threads for TFLite inference (4 is good for Pi 4, use 2-3 for Pi 3)
+
+# Data Collection Settings
+DATA_COLLECTION_MODE = False # Set to True to auto-capture images for training
+DATA_COLLECTION_INTERVAL = 60 # Capture every 60 seconds
+DATA_COLLECTION_DIR = "collected_data" # Directory to save images
