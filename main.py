@@ -194,6 +194,13 @@ def main():
         if should_publish:
             client.publish(config.MQTT_TOPIC, json.dumps(payload), qos=0)
             print(f"Published ({publish_reason}): {payload}")
+            
+            # Debug: Save snapshot on detection state change (Empty -> Person)
+            # This helps user identify what object is causing false positives
+            if publish_reason == "state_change" and is_person_detected:
+                cv2.imwrite("debug_detection.jpg", frame)
+                print("Snapshot saved to 'debug_detection.jpg'")
+
             last_publish_time = current_time
             last_detected_state = is_person_detected
 

@@ -20,7 +20,7 @@ MQTT_PASSWORD = "5617091"
 CLIENT_ID = DEVICE_ID # Client ID must be unique
 
 # Detection Settings
-CONFIDENCE_THRESHOLD = 0.5 # 0.5 is standard. Increase to 0.6 if ghosts persist.
+CONFIDENCE_THRESHOLD = 0.6 # Increased to 0.6 because of static false positives (objects looking like people)
 TARGET_LABELS = ["person"] # List of labels to detect
 DETECTION_FRAMES_TO_CONFIRM = 3 # Consecutive frames required to confirm detection (Anti-Ghost)
 
