@@ -115,11 +115,15 @@ def main():
         # Data Collection Logic (Capture raw frame before any drawing)
         if config.DATA_COLLECTION_MODE:
             if time.time() - last_capture_time > config.DATA_COLLECTION_INTERVAL:
-                timestamp = int(time.time())
-                filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp}.jpg")
-                cv2.imwrite(filename, frame)
-                print(f"Saved sample image: {filename}")
-                last_capture_time = time.time()
+                try:
+                    import datetime
+                    timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp_str}.jpg")
+                    cv2.imwrite(filename, frame)
+                    print(f"Saved sample image: {filename}")
+                    last_capture_time = time.time()
+                except Exception as e:
+                    print(f"Error saving sample image: {e}")
 
         found_in_current_frame = False
         max_prob = 0.0
