@@ -126,17 +126,17 @@ def main():
                 if time.time() - last_capture_time > config.DATA_COLLECTION_INTERVAL:
                     try:
                         timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp_str}.jpg")
-                    
-                    save_frame = frame
-                    if getattr(config, 'DATA_COLLECTION_RESIZE_TO_SQUARE', False):
-                        save_frame = cv2.resize(frame, (224, 224))
+                        filename = os.path.join(config.DATA_COLLECTION_DIR, "sample_{}.jpg".format(timestamp_str))
                         
-                    cv2.imwrite(filename, save_frame)
-                    print(f"Saved sample image: {filename}")
-                    last_capture_time = time.time()
-                except Exception as e:
-                    print(f"Error saving sample image: {e}")
+                        save_frame = frame
+                        if getattr(config, 'DATA_COLLECTION_RESIZE_TO_SQUARE', False):
+                            save_frame = cv2.resize(frame, (224, 224))
+                            
+                        cv2.imwrite(filename, save_frame)
+                        print("Saved sample image: {}".format(filename))
+                        last_capture_time = time.time()
+                    except Exception as e:
+                        print("Error saving sample image: {}".format(e))
 
         found_in_current_frame = False
         max_prob = 0.0
