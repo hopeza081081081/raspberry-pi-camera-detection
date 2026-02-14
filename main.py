@@ -129,7 +129,7 @@ def main():
         max_prob = 0.0
 
         if TFLITE_AVAILABLE and interpreter:
-            # Real Detection Logic
+            # Pre-processing (Common)
             frame_resized = cv2.resize(frame, (width, height))
             input_data = np.expand_dims(frame_resized, axis=0)
             
@@ -141,37 +141,63 @@ def main():
             interpreter.set_tensor(input_details[0]['index'], input_data)
             interpreter.invoke()
 
-            boxes = interpreter.get_tensor(output_details[0]['index'])[0]
-            classes = interpreter.get_tensor(output_details[1]['index'])[0]
-            scores = interpreter.get_tensor(output_details[2]['index'])[0]
+            if config.MODEL_TYPE == "classification":
+                # --- Classification Logic (Teachable Machine) ---
+                # Output is just a list of probabilities: [0.1, 0.9]
+                output_data = interpreter.get_tensor(output_details[0]['index'])[0]
+                
+                # Retrieve highest score
+                top_index = np.argmax(output_data)
+                max_prob = float(output_data[top_index]) / 255.0 if output_details[0]['dtype'] == np.uint8 else float(output_data[top_index])
+                detected_label = labels[top_index] if top_index < len(labels) else "Unknown"
 
-            # Debug: Print top detection every ~30 frames (approx 1 sec)
-            if int(time.time() * 10) % 30 == 0:
-                # Get top result info for debugging
-                top_score = scores[0]
-                top_class_id = int(classes[0])
-                top_label = labels[top_class_id] if top_class_id < len(labels) else "Unknown"
-                print(f"DEBUG: Top detection: '{top_label}' with score {top_score:.2f}")
+                # Debug print
+                if int(time.time() * 10) % 30 == 0:
+                    print(f"DEBUG: Top Class: '{detected_label}' ({max_prob:.2f})")
 
-            for i in range(len(scores)):
-                if scores[i] > config.CONFIDENCE_THRESHOLD:
-                    class_id = int(classes[i])
-                    label_name = labels[class_id] if class_id < len(labels) else "Unknown"
-                    
-                    # Filter by configured target labels
-                    # Check if the detected label is in our target list (case-insensitive)
-                    if any(target.lower() in label_name.lower() for target in config.TARGET_LABELS):
-                        # Update status if we found a person (or target) with higher confidence
+                # Check if detected label is in target list
+                if any(target.lower() in detected_label.lower() for target in config.TARGET_LABELS):
+                    if max_prob > config.CONFIDENCE_THRESHOLD:
                         found_in_current_frame = True
-                        if scores[i] > max_prob:
-                            max_prob = float(scores[i])
+                        # Draw generic label (No bounding box for classification)
+                        cv2.putText(frame, f"FOUND: {detected_label} ({max_prob*100:.1f}%)", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                else:
+                    # Show what it thinks it is (even if not target)
+                     cv2.putText(frame, f"Scene: {detected_label} ({max_prob*100:.1f}%)", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+
+            else:
+                # --- Object Detection Logic (MobileNet SSD) ---
+                boxes = interpreter.get_tensor(output_details[0]['index'])[0]
+                classes = interpreter.get_tensor(output_details[1]['index'])[0]
+                scores = interpreter.get_tensor(output_details[2]['index'])[0]
+
+                # Debug: Print top detection every ~30 frames (approx 1 sec)
+                if int(time.time() * 10) % 30 == 0:
+                    # Get top result info for debugging
+                    top_score = scores[0]
+                    top_class_id = int(classes[0])
+                    top_label = labels[top_class_id] if top_class_id < len(labels) else "Unknown"
+                    print(f"DEBUG: Top detection: '{top_label}' with score {top_score:.2f}")
+
+                for i in range(len(scores)):
+                    if scores[i] > config.CONFIDENCE_THRESHOLD:
+                        class_id = int(classes[i])
+                        label_name = labels[class_id] if class_id < len(labels) else "Unknown"
                         
-                        ymin, xmin, ymax, xmax = boxes[i]
-                        imH, imW, _ = frame.shape
-                        (left, right, top, bottom) = (int(xmin * imW), int(xmax * imW), int(ymin * imH), int(ymax * imH))
-                        
-                        cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-                        cv2.putText(frame, f"{label_name} {scores[i]:.2f}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                        # Filter by configured target labels
+                        # Check if the detected label is in our target list (case-insensitive)
+                        if any(target.lower() in label_name.lower() for target in config.TARGET_LABELS):
+                            # Update status if we found a person (or target) with higher confidence
+                            found_in_current_frame = True
+                            if scores[i] > max_prob:
+                                max_prob = float(scores[i])
+                            
+                            ymin, xmin, ymax, xmax = boxes[i]
+                            imH, imW, _ = frame.shape
+                            (left, right, top, bottom) = (int(xmin * imW), int(xmax * imW), int(ymin * imH), int(ymax * imH))
+                            
+                            cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                            cv2.putText(frame, f"{label_name} {scores[i]:.2f}", (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         else:
             # Simulation Logic
             # Randomly simulate "Person Detected" every ~5 seconds or based on key press

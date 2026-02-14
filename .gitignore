@@ -6,8 +6,5 @@ __pycache__/
 raspberry-pi-camera-detection/
 venv/
 
-# Models
-models/
-
 # MacOS
 .DS_Store
