@@ -114,10 +114,18 @@ def main():
         
         # Data Collection Logic (Capture raw frame before any drawing)
         if config.DATA_COLLECTION_MODE:
-            if time.time() - last_capture_time > config.DATA_COLLECTION_INTERVAL:
-                try:
-                    import datetime
-                    timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            # Check time range (e.g., 6:00 - 18:00)
+            import datetime
+            current_hour = datetime.datetime.now().hour
+            
+            # Use getattr to be safe if user hasn't updated config yet (defaults to 24/7)
+            start_hour = getattr(config, 'DATA_COLLECTION_START_HOUR', 0)
+            end_hour = getattr(config, 'DATA_COLLECTION_END_HOUR', 24)
+            
+            if start_hour <= current_hour < end_hour:
+                if time.time() - last_capture_time > config.DATA_COLLECTION_INTERVAL:
+                    try:
+                        timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp_str}.jpg")
                     
                     save_frame = frame
@@ -164,8 +172,12 @@ def main():
                 if any(target.lower() in detected_label.lower() for target in config.TARGET_LABELS):
                     if max_prob > config.CONFIDENCE_THRESHOLD:
                         found_in_current_frame = True
-                        # Draw generic label (No bounding box for classification)
-                        cv2.putText(frame, f"FOUND: {detected_label} ({max_prob*100:.1f}%)", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                        
+                        # Classification doesn't give coordinates, so we draw a "Full Screen Box"
+                        # to indicate we found the target
+                        h, w, _ = frame.shape
+                        cv2.rectangle(frame, (0, 0), (w, h), (0, 255, 0), 10) # Thick Green Border
+                        cv2.putText(frame, f"FOUND: {detected_label} ({max_prob*100:.1f}%)", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
                 else:
                     # Show what it thinks it is (even if not target)
                      cv2.putText(frame, f"Scene: {detected_label} ({max_prob*100:.1f}%)", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)

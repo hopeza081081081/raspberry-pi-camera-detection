@@ -36,3 +36,5 @@ DATA_COLLECTION_MODE = True # Set to True to auto-capture images for training
 DATA_COLLECTION_INTERVAL = 300 # Capture every 60 seconds
 DATA_COLLECTION_DIR = "collected_data" # Directory to save images
 DATA_COLLECTION_RESIZE_TO_SQUARE = True # Resize to 224x224 (Teachable Machine standard)
+DATA_COLLECTION_START_HOUR = 6 # Start collecting at 6:00 AM
+DATA_COLLECTION_END_HOUR = 18 # Stop collecting at 6:00 PM
