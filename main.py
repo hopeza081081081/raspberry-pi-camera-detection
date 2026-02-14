@@ -119,7 +119,12 @@ def main():
                     import datetime
                     timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                     filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp_str}.jpg")
-                    cv2.imwrite(filename, frame)
+                    
+                    save_frame = frame
+                    if getattr(config, 'DATA_COLLECTION_RESIZE_TO_SQUARE', False):
+                        save_frame = cv2.resize(frame, (224, 224))
+                        
+                    cv2.imwrite(filename, save_frame)
                     print(f"Saved sample image: {filename}")
                     last_capture_time = time.time()
                 except Exception as e:
