@@ -28,3 +28,8 @@ DETECTION_FRAMES_TO_CONFIRM = 3 # Consecutive frames required to confirm detecti
 HEADLESS_MODE = False # Set to False if you have a monitor connected and want to see the video
 NUM_THREADS = 4 # Number of threads for TFLite inference (4 is good for Pi 4, use 2-3 for Pi 3)
 
+# Motion Verification Settings
+MOTION_VERIFICATION_ENABLED = True # Complementary motion detection to reduce static false positives
+MOTION_THRESHOLD = 500 # Minimum number of pixels changed to consider it "motion"
+MOTION_COOLDOWN_SECONDS = 30 # Once a person is verified, keep them "active" for this long if they stay still
+

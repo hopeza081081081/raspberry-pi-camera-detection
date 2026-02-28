@@ -95,6 +95,11 @@ def main():
     PUBLISH_INTERVAL = 1.0
     last_detected_state = False # Track previous state for change detection 
     consecutive_frames = 0 # Counter for persistence filter
+    
+    # Motion Detection State
+    prev_frame_gray = None
+    last_motion_time = 0
+    is_motion_verified = False
 
     # 4. Setup Camera
     while True:
@@ -109,6 +114,25 @@ def main():
 
         found_in_current_frame = False
         max_prob = 0.0
+        motion_active = False
+
+        # 5. Motion Detection Logic
+        if config.MOTION_VERIFICATION_ENABLED:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.GaussianBlur(gray, (21, 21), 0)
+            
+            if prev_frame_gray is not None:
+                frame_delta = cv2.absdiff(prev_frame_gray, gray)
+                thresh = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)[1]
+                thresh = cv2.dilate(thresh, None, iterations=2)
+                
+                # Count motion pixels
+                motion_pixels = cv2.countNonZero(thresh)
+                if motion_pixels > config.MOTION_THRESHOLD:
+                    motion_active = True
+                    last_motion_time = time.time()
+            
+            prev_frame_gray = gray
 
         if TFLITE_AVAILABLE and interpreter:
             # Real Detection Logic
@@ -172,8 +196,36 @@ def main():
         else:
             consecutive_frames = 0
             
-        # Only confirm detection if verified for N consecutive frames
-        is_person_detected = (consecutive_frames >= config.DETECTION_FRAMES_TO_CONFIRM)
+        # 6. Final Verification Logic (Motion + AI + Cooldown)
+        ai_person_detected = (consecutive_frames >= config.DETECTION_FRAMES_TO_CONFIRM)
+        
+        if config.MOTION_VERIFICATION_ENABLED:
+            current_time = time.time()
+            # Verify if AI sees person AND motion occurred recently
+            # Rule: Must have motion to START, but AI can sustain it (Cooldown)
+            if ai_person_detected:
+                if motion_active:
+                    is_motion_verified = True
+                elif is_motion_verified and (current_time - last_motion_time < config.MOTION_COOLDOWN_SECONDS):
+                    # Maintain state as long as AI sees them and we're in cooldown
+                    is_motion_verified = True
+                else:
+                    is_motion_verified = False
+            else:
+                is_motion_verified = False
+                
+            is_person_detected = is_motion_verified
+        else:
+            is_person_detected = ai_person_detected
+
+        # Visual Feedback for Debugging
+        if not config.HEADLESS_MODE:
+            imH, imW, _ = frame.shape
+            status_text = f"AI: {'YES' if ai_person_detected else 'NO'} | Motion: {'YES' if motion_active else 'NO'}"
+            cv2.putText(frame, status_text, (10, imH - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            if config.MOTION_VERIFICATION_ENABLED:
+                v_text = f"Verified: {'YES' if is_person_detected else 'NO'}"
+                cv2.putText(frame, v_text, (10, imH - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
 
         # Publish to MQTT
         current_time = time.time()
