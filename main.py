@@ -94,7 +94,6 @@ def main():
     last_publish_time = 0
     PUBLISH_INTERVAL = 1.0
     last_detected_state = False # Track previous state for change detection 
-    consecutive_frames = 0 # Counter for persistence filter
     
     # Motion Detection State
     prev_frame_gray = None
@@ -190,14 +189,8 @@ def main():
                 max_prob = 0.0
                 cv2.putText(frame, "SIMULATION: Empty", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-        # Persistence Filter Logic
-        if found_in_current_frame:
-            consecutive_frames += 1
-        else:
-            consecutive_frames = 0
-            
         # 6. Final Verification Logic (Motion + AI + Cooldown)
-        ai_person_detected = (consecutive_frames >= config.DETECTION_FRAMES_TO_CONFIRM)
+        ai_person_detected = found_in_current_frame
         
         if config.MOTION_VERIFICATION_ENABLED:
             current_time = time.time()
