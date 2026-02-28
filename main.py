@@ -96,13 +96,7 @@ def main():
     last_detected_state = False # Track previous state for change detection 
     consecutive_frames = 0 # Counter for persistence filter
 
-    # Data Collection Init
-    if config.DATA_COLLECTION_MODE:
-        if not os.path.exists(config.DATA_COLLECTION_DIR):
-            os.makedirs(config.DATA_COLLECTION_DIR)
-            print(f"Created data collection directory: {config.DATA_COLLECTION_DIR}")
-    last_capture_time = 0
-
+    # 4. Setup Camera
     while True:
         # Capture frame
         ret, frame = cap.read()
@@ -112,18 +106,6 @@ def main():
             cv2.putText(frame, "No Camera - Simulation", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             time.sleep(0.1)
         
-        # Data Collection Logic (Capture raw frame before any drawing)
-        if config.DATA_COLLECTION_MODE:
-            if time.time() - last_capture_time > config.DATA_COLLECTION_INTERVAL:
-                try:
-                    import datetime
-                    timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = os.path.join(config.DATA_COLLECTION_DIR, f"sample_{timestamp_str}.jpg")
-                    cv2.imwrite(filename, frame)
-                    print(f"Saved sample image: {filename}")
-                    last_capture_time = time.time()
-                except Exception as e:
-                    print(f"Error saving sample image: {e}")
 
         found_in_current_frame = False
         max_prob = 0.0
